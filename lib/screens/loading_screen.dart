@@ -53,16 +53,22 @@ class _LoadingScreenState extends State<LoadingScreen> {
   }
 
   void getLocation() async {
-    Position position = await Geolocator.getCurrentPosition(
-        forceAndroidLocationManager: true,
-        desiredAccuracy: LocationAccuracy.low);
-    print(position);
+    try {
+      Position position = await Geolocator.getCurrentPosition(
+          forceAndroidLocationManager: true,
+          desiredAccuracy: LocationAccuracy.low);
+      print(position);
+    } on Exception catch (e) {
+      print(e);
+    }
   }
-@override
+
+  @override
   void deactivate() {
     // TODO: implement deactivate
     super.deactivate();
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
