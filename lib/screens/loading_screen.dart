@@ -1,9 +1,12 @@
+import 'package:clima/services/networking.dart';
 import 'package:flutter/material.dart';
 import 'package:clima/services/location.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'location_screen.dart';
 
 Location myLocation = Location();
+
+const apikey = 'f267658008c4ceed2e43cecfb2e5087f';
 
 class LoadingScreen extends StatefulWidget {
   @override
@@ -11,40 +14,30 @@ class LoadingScreen extends StatefulWidget {
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  double? latitude;
+  double? longitude;
+
   @override
   void initState() {
     // TODO: implement initState
-
     super.initState();
     myLocation.getPermission();
     myLocation.getCurrentLocation();
-
-    print('App has been deactivated');
+    print('App has been started');
   }
 
-  void getData() async {
-    http.Response response = await http.get(
-      Uri.parse(
-          'https://api.openweathermap.org/data/2.5/weather?lat=28.47852941693939&lon=77.34365728683741&appid=f267658008c4ceed2e43cecfb2e5087f#'),
-    );
+  void getLocationData() async {
+    latitude = myLocation.latitude;
+    longitude = myLocation.longitude;
+    NetworkHelper networkHelper = NetworkHelper(Uri.parse(
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$longitude&appid=$apikey'));
 
-    if (response.statusCode == 200) {
-      String data = response.body;
-      var decodeData = jsonDecode(data);
-      var id = decodeData["weather"][0]["id"];
-      var temprature = decodeData["main"]["temp"];
-      var city = decodeData["name"];
-      var latitude = decodeData["coord"]['lat'];
-      var longitude = decodeData["coord"]['lon'];
-
-      print(id);
-      print(temprature);
-      print(city);
-      print(latitude);
-      print(longitude);
-    } else {
-      print(response.statusCode);
-    }
+    var weatherData = await networkHelper.getData();
+    print(latitude);
+    print(longitude);
+    Navigator.push(context, MaterialPageRoute(builder: (context) {
+      return LocationScreen();
+    }));
   }
 
   @override
@@ -56,17 +49,13 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    getData();
-    myLocation.getCurrentLocation();
+    // myLocation.getCurrentLocation();
+    getLocationData();
     return Scaffold(
       body: Center(
-        child: Column(
-          children: [
-            Container(
-              height: 100,
-              width: 100,
-            ),
-          ],
+        child: SpinKitDoubleBounce(
+          color: Colors.amber,
+          size: 100.0,
         ),
       ),
     );
