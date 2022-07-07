@@ -10,6 +10,7 @@ class LocationScreen extends StatefulWidget {
 }
 
 class _LocationScreenState extends State<LocationScreen> {
+  WeatherModel weather = WeatherModel();
   int? condition;
   var weatherIcon;
   var temMessage;
@@ -22,15 +23,24 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   void UIupdate(dynamic weatherData) {
-    condition = weatherData["weather"][0]["id"];
-    WeatherModel weather = WeatherModel();
-    weatherIcon = weather.getWeatherIcon(condition!);
-    double temp = weatherData["main"]["temp"];
-    temprature = temp.toInt();
-    temMessage = weather.getMessage(temprature!);
+    setState(() {
+      if (weatherData == Null) {
+        condition = 0;
+        weatherIcon = 'Error';
+        temMessage = 'Unable to get weather data';
+        city = '';
+        return;
+      }
+      condition = weatherData["weather"][0]["id"];
 
-    city = weatherData["name"];
-    print(weatherData);
+      weatherIcon = weather.getWeatherIcon(condition!);
+      double temp = weatherData["main"]["temp"];
+      temprature = temp.toInt();
+      temMessage = weather.getMessage(temprature!);
+
+      city = weatherData["name"];
+      print(weatherData);
+    });
   }
 
   @override
@@ -55,7 +65,10 @@ class _LocationScreenState extends State<LocationScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: <Widget>[
                   FlatButton(
-                    onPressed: () {},
+                    onPressed: () async {
+                      var weatherData = await weather.getLocationMethod();
+                      UIupdate(weatherData);
+                    },
                     child: Icon(
                       Icons.near_me,
                       size: 50.0,
